@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import type { Drawing, LineKind } from '../core/drawing';
+import { t } from '../i18n';
 
 export type Paper = 'a4' | 'a3' | 'letter';
 
@@ -68,7 +69,7 @@ export function drawingsToPdf(drawings: Drawing[], paper: Paper): ArrayBuffer {
           doc.rect(MARGIN, MARGIN, pw, ph, 'S');
           doc.setFontSize(7);
           doc.setTextColor(120, 120, 120);
-          doc.text(`${d.title} – sheet row ${r + 1}/${rows}, column ${c + 1}/${cols} – sheets overlap ${OVERLAP} mm`, MARGIN, MARGIN - 3);
+          doc.text(t().drawing.sheet(d.title, r + 1, rows, c + 1, cols, OVERLAP), MARGIN, MARGIN - 3);
         }
       }
     }

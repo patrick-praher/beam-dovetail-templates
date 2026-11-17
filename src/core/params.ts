@@ -1,3 +1,5 @@
+import type { Messages } from '../i18n/en';
+
 /** All lengths in millimetres, all angles in degrees. */
 export interface Params {
   // Wood
@@ -62,73 +64,72 @@ export const DEFAULTS: Params = {
   bedY: 256,
 };
 
+/** Labels and hints live in the translations (`fields` in src/i18n). */
 export interface Field {
   key: keyof Params;
-  label: string;
   unit?: string;
   step?: number;
   min?: number;
   max?: number;
-  hint?: string;
   /** Disabled while "auto size" is on. */
   auto?: boolean;
 }
 
 export interface FieldGroup {
-  title: string;
+  id: keyof Messages['groups'];
   fields: Field[];
 }
 
 export const FIELD_GROUPS: FieldGroup[] = [
   {
-    title: 'Wood',
+    id: 'wood',
     fields: [
-      { key: 'joistWidth', label: 'Joist width', unit: 'mm', min: 20, hint: 'Beam that carries the dovetail tenon on its end' },
-      { key: 'joistHeight', label: 'Joist height', unit: 'mm', min: 20 },
-      { key: 'beamWidth', label: 'Main beam width', unit: 'mm', min: 20, hint: 'Beam that receives the socket in its side face' },
-      { key: 'beamHeight', label: 'Main beam height', unit: 'mm', min: 20 },
+      { key: 'joistWidth', unit: 'mm', min: 20 },
+      { key: 'joistHeight', unit: 'mm', min: 20 },
+      { key: 'beamWidth', unit: 'mm', min: 20 },
+      { key: 'beamHeight', unit: 'mm', min: 20 },
     ],
   },
   {
-    title: 'Dovetail',
+    id: 'dovetail',
     fields: [
-      { key: 'autoSize', label: 'Size from joist (60 % width, 70 % height)' },
-      { key: 'tailWidth', label: 'Width at top', unit: 'mm', min: 5, auto: true, hint: 'Socket width at its deepest point, measured at the beam top' },
-      { key: 'tailHeight', label: 'Height', unit: 'mm', min: 5, auto: true, hint: 'From beam top to the lowest point of the round bottom' },
-      { key: 'taperDeg', label: 'Wedge taper per side', unit: '°', step: 0.5, min: 0, max: 15, hint: 'Flanks converge downwards so the joint tightens as the joist drops in. 0 = parallel' },
-      { key: 'tenonLength', label: 'Tenon length', unit: 'mm', step: 0.5, min: 3 },
-      { key: 'depthGap', label: 'Extra socket depth', unit: 'mm', step: 0.5, min: 0, hint: 'Socket is routed this much deeper than the tenon is long, so the shoulders close' },
+      { key: 'autoSize' },
+      { key: 'tailWidth', unit: 'mm', min: 5, auto: true },
+      { key: 'tailHeight', unit: 'mm', min: 5, auto: true },
+      { key: 'taperDeg', unit: '°', step: 0.5, min: 0, max: 15 },
+      { key: 'tenonLength', unit: 'mm', step: 0.5, min: 3 },
+      { key: 'depthGap', unit: 'mm', step: 0.5, min: 0 },
     ],
   },
   {
-    title: 'Router',
+    id: 'router',
     fields: [
-      { key: 'bitDiameter', label: 'Dovetail bit Ø (largest)', unit: 'mm', step: 0.1, min: 3 },
-      { key: 'bitAngleDeg', label: 'Bit angle per side', unit: '°', step: 0.5, min: 0, max: 30, hint: 'Flank angle measured from the bit axis (e.g. 14° for a 1:4 bit)' },
-      { key: 'bitCutLength', label: 'Bit cutting length', unit: 'mm', step: 0.5, min: 1 },
-      { key: 'bushingDiameter', label: 'Template guide Ø (outside)', unit: 'mm', step: 0.1, min: 3 },
-      { key: 'bushingLength', label: 'Template guide collar length', unit: 'mm', step: 0.5, min: 0 },
+      { key: 'bitDiameter', unit: 'mm', step: 0.1, min: 3 },
+      { key: 'bitAngleDeg', unit: '°', step: 0.5, min: 0, max: 30 },
+      { key: 'bitCutLength', unit: 'mm', step: 0.5, min: 1 },
+      { key: 'bushingDiameter', unit: 'mm', step: 0.1, min: 3 },
+      { key: 'bushingLength', unit: 'mm', step: 0.5, min: 0 },
     ],
   },
   {
-    title: 'Fit',
+    id: 'fit',
     fields: [
-      { key: 'clearance', label: 'Flank clearance per side', unit: 'mm', step: 0.05, hint: 'Positive = looser, negative = tighter' },
-      { key: 'bottomRelief', label: 'Bottom relief', unit: 'mm', step: 0.5, min: 0, hint: 'Gap under the tenon so a tapered joint seats on its flanks, not on the round bottom' },
+      { key: 'clearance', unit: 'mm', step: 0.05 },
+      { key: 'bottomRelief', unit: 'mm', step: 0.5, min: 0 },
     ],
   },
   {
-    title: 'Template',
+    id: 'template',
     fields: [
-      { key: 'templateThickness', label: 'Plate thickness', unit: 'mm', step: 0.5, min: 2 },
-      { key: 'border', label: 'Border / frame width', unit: 'mm', min: 15 },
-      { key: 'leadIn', label: 'Socket lead-in above beam', unit: 'mm', min: 5, hint: 'How far the slot continues above the beam top so the bit starts outside the wood' },
-      { key: 'lipDepth', label: 'Stop lip depth', unit: 'mm', min: 0, hint: 'Lips hook over the top face of the wood. 0 = no lips' },
-      { key: 'screwDiameter', label: 'Screw hole Ø', unit: 'mm', step: 0.5, min: 0, hint: '0 = no holes (clamp the template instead)' },
-      { key: 'frame', label: 'Support frame around tenon template' },
-      { key: 'supportBracket', label: 'Screwed support bracket under the frame', hint: 'Separate printed L-bracket: screwed to the bottom of the frame and into the underside of the joist, so the frame cannot flex under the router' },
-      { key: 'bedX', label: 'Print bed X', unit: 'mm', min: 50 },
-      { key: 'bedY', label: 'Print bed Y', unit: 'mm', min: 50 },
+      { key: 'templateThickness', unit: 'mm', step: 0.5, min: 2 },
+      { key: 'border', unit: 'mm', min: 15 },
+      { key: 'leadIn', unit: 'mm', min: 5 },
+      { key: 'lipDepth', unit: 'mm', min: 0 },
+      { key: 'screwDiameter', unit: 'mm', step: 0.5, min: 0 },
+      { key: 'frame' },
+      { key: 'supportBracket' },
+      { key: 'bedX', unit: 'mm', min: 50 },
+      { key: 'bedY', unit: 'mm', min: 50 },
     ],
   },
 ];

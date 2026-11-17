@@ -14,7 +14,8 @@ the finished joint, and warns when something cannot work.
 
 **Use it online: https://patrick-praher.github.io/beam-dovetail-templates/**
 
-Everything runs locally in the browser — no server, no upload.
+Everything runs locally in the browser — no server, no upload. The app is in
+English and German (picked from the browser language, switchable in the header).
 
 If this saves you a template or two, you can
 [support the project on GitHub Sponsors](https://github.com/sponsors/patrick-praher).
@@ -126,10 +127,11 @@ free choice of bit and guide.
 
 ```
 src/core/params.ts    inputs, defaults, form description
-src/core/joint.ts     joint maths and validation (no dependencies)
+src/core/joint.ts     joint maths and validation
 src/core/shapes.ts    2D outlines and 3D solids (Manifold CSG kernel)
 src/core/drawing.ts   1:1 drawings shared by SVG, DXF and PDF
 src/export/           STL, SVG, DXF, PDF writers
+src/i18n/             English and German texts (en.ts defines the keys)
 src/ui/               form, 2D view, three.js view
 tests/                vitest
 scripts/              preset generator for ready-made STL sets

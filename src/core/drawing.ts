@@ -1,3 +1,4 @@
+import { num, t as messages } from '../i18n';
 import { halfWidthAt, uContour, type Joint, type Pt } from './joint';
 import type { Model, Rect, TemplateModel } from './shapes';
 
@@ -28,7 +29,7 @@ export interface Drawing {
 }
 
 const TEXT = 3.5;
-const f = (n: number) => (Math.round(n * 10) / 10).toString();
+const f = (n: number) => num(Math.round(n * 10) / 10);
 
 function base(title: string, t: TemplateModel): { paths: Path[]; labels: Label[] } {
   const paths: Path[] = t.outline.map((pts) => ({ kind: 'template', pts, closed: true }));
@@ -66,7 +67,7 @@ function finish(id: Drawing['id'], title: string, t: TemplateModel, paths: Path[
   for (let i = 0; i <= 10; i++) {
     paths.push({ kind: 'scale', closed: false, pts: [{ x: x0 + i * 10, y: y - (i % 5 === 0 ? 3 : 1.5) }, { x: x0 + i * 10, y }] });
   }
-  labels.push({ x: x0 + 103, y: y, text: '100 mm – check print scale', size: TEXT, anchor: 'start' });
+  labels.push({ x: x0 + 103, y: y, text: messages().drawing.scale, size: TEXT, anchor: 'start' });
   for (const n of notes) {
     y += TEXT * 1.6;
     labels.push({ x: x0, y, text: n, size: TEXT, anchor: 'start' });
@@ -87,9 +88,11 @@ function finish(id: Drawing['id'], title: string, t: TemplateModel, paths: Path[
 export function buildDrawings(j: Joint, m: Model): Drawing[] {
   const { p, beta } = j;
   const T = p.templateThickness;
+  const txt = messages().drawing;
+  const router = txt.router(f(p.bitDiameter), f(p.bitAngleDeg), f(p.bushingDiameter), f(T));
 
   // Socket template on the side face of the main beam.
-  const sTitle = 'Socket template – main beam';
+  const sTitle = txt.socketTitle;
   const s = base(sTitle, m.socket);
   const sb = m.socket.bounds;
   for (const y of [0, p.beamHeight]) {
@@ -97,16 +100,16 @@ export function buildDrawings(j: Joint, m: Model): Drawing[] {
   }
   s.paths.push({ kind: 'cut', closed: false, pts: uContour(j.socketSurface, beta, 0) });
   s.paths.push({ kind: 'cutDeep', closed: false, pts: uContour(j.socketDeep, beta, 0) });
-  s.labels.push({ x: sb.x0 - 10, y: -1.5, text: 'beam top', size: 3, anchor: 'start' });
+  s.labels.push({ x: sb.x0 - 10, y: -1.5, text: txt.beamTop, size: 3, anchor: 'start' });
   const socket = finish('socket', sTitle, m.socket, s.paths, s.labels, [
-    `Slot width at beam top: ${f(2 * halfWidthAt(j.slot, beta, 0))} mm   ·   slot bottom radius: ${f(j.slot.rho)} mm`,
-    `Bit Ø ${f(p.bitDiameter)} / ${f(p.bitAngleDeg)}°   ·   guide Ø ${f(p.bushingDiameter)}   ·   plate ${f(T)} mm`,
-    `Bit depth below router base: ${f(T + j.socketDepth)} mm (socket ${f(j.socketDepth)} mm deep)`,
-    'Solid blue: socket opening on the beam face. Dashed blue: socket at full depth.',
+    txt.slot(f(2 * halfWidthAt(j.slot, beta, 0)), f(j.slot.rho)),
+    router,
+    txt.socketDepth(f(T + j.socketDepth), f(j.socketDepth)),
+    txt.socketLegend,
   ]);
 
   // Tenon template on the end grain of the joist.
-  const tTitle = 'Tenon template – joist end';
+  const tTitle = txt.tenonTitle;
   const t = base(tTitle, m.tenon);
   const hw = p.joistWidth / 2;
   t.paths.push({
@@ -122,12 +125,12 @@ export function buildDrawings(j: Joint, m: Model): Drawing[] {
     t.paths.push({ kind: 'lip', closed: true, pts: [{ x: r.x0, y: r.y0 }, { x: r.x1, y: r.y0 }, { x: r.x1, y: r.y1 }, { x: r.x0, y: r.y1 }] });
   }
   const tenon = finish('tenon', tTitle, m.tenon, t.paths, t.labels, [
-    `Tongue width at joist top: ${f(2 * halfWidthAt(j.tongue, beta, 0))} mm   ·   tongue tip radius: ${f(j.tongue.rho)} mm`,
-    `Bit Ø ${f(p.bitDiameter)} / ${f(p.bitAngleDeg)}°   ·   guide Ø ${f(p.bushingDiameter)}   ·   plate ${f(T)} mm`,
-    `Bit depth below router base: ${f(T + j.tenonDepth)} mm (tenon ${f(j.tenonDepth)} mm long)`,
-    'Solid blue: tenon at its end face. Dashed blue: tenon at the shoulder.',
+    txt.tongue(f(2 * halfWidthAt(j.tongue, beta, 0)), f(j.tongue.rho)),
+    router,
+    txt.tenonDepth(f(T + j.tenonDepth), f(j.tenonDepth)),
+    txt.tenonLegend,
     ...(br
-      ? [`Support bracket (dotted, separate STL, ${br.size.map((v) => f(v)).join(' × ')} mm): 2 screws ${f(p.screwDiameter)} × ${br.frameScrew} through the frame, 1 screw ${f(p.screwDiameter)} × ${br.joistScrew} up into the joist.`]
+      ? [txt.bracket(br.size.map((v) => f(v)).join(' × '), f(p.screwDiameter), br.frameScrew, br.joistScrew)]
       : []),
   ]);
 

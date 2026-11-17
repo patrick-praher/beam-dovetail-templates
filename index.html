@@ -3,69 +3,70 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Beam Dovetail Template Generator</title>
-    <meta name="description" content="Generate 3D-printable and paper router templates for large dovetail joints in wooden beams." />
+    <title data-i18n="meta.title">Beam Dovetail Template Generator</title>
+    <meta name="description" data-i18n-content="meta.description" content="Generate 3D-printable and paper router templates for large dovetail joints in wooden beams." />
   </head>
   <body>
     <header>
-      <h1>Beam Dovetail Template Generator</h1>
-      <p>Router templates for big dovetail joints between a joist and a main beam — as STL for 3D printing or 1:1 drawings for paper, plywood or CNC.</p>
+      <h1 data-i18n="header.title">Beam Dovetail Template Generator</h1>
+      <p data-i18n="header.intro">Router templates for big dovetail joints between a joist and a main beam — as STL for 3D printing or 1:1 drawings for paper, plywood or CNC.</p>
       <p class="links">
-        <a href="https://github.com/sponsors/patrick-praher" target="_blank" rel="noopener">♥ Support this project</a>
-        · <a href="https://github.com/patrick-praher/beam-dovetail-templates" target="_blank" rel="noopener">Source on GitHub</a>
-        · Free for non-commercial use
+        <a href="https://github.com/sponsors/patrick-praher" target="_blank" rel="noopener" data-i18n="header.support">♥ Support this project</a>
+        · <a href="https://github.com/patrick-praher/beam-dovetail-templates" target="_blank" rel="noopener" data-i18n="header.source">Source on GitHub</a>
+        · <span data-i18n="header.license">Free for non-commercial use</span>
+        · <select id="lang" data-i18n-aria-label="header.language" aria-label="Language"></select>
       </p>
     </header>
     <div class="layout">
       <aside>
         <form id="form" autocomplete="off"></form>
-        <button type="button" id="reset" class="ghost">Reset to defaults</button>
+        <button type="button" id="reset" class="ghost" data-i18n="ui.reset">Reset to defaults</button>
       </aside>
       <main>
         <nav class="tabs" id="tabs" role="tablist">
-          <button role="tab" data-view="drawings" aria-selected="true">2D templates</button>
-          <button role="tab" data-view="joint">3D joint</button>
-          <button role="tab" data-view="socket">3D socket template</button>
-          <button role="tab" data-view="tenon">3D tenon template</button>
+          <button role="tab" data-view="drawings" aria-selected="true" data-i18n="ui.tabDrawings">2D templates</button>
+          <button role="tab" data-view="joint" data-i18n="ui.tabJoint">3D joint</button>
+          <button role="tab" data-view="socket" data-i18n="ui.tabSocket">3D socket template</button>
+          <button role="tab" data-view="tenon" data-i18n="ui.tabTenon">3D tenon template</button>
         </nav>
         <div class="stage">
           <div id="drawings" class="drawings"></div>
           <div id="three" class="three" hidden></div>
-          <label id="explode-wrap" class="overlay" hidden><input type="checkbox" id="explode" checked /> Lift joist out</label>
+          <label id="explode-wrap" class="overlay" hidden><input type="checkbox" id="explode" checked /> <span data-i18n="ui.explode">Lift joist out</span></label>
           <div id="blocked" class="blocked" hidden>Fix the errors below to see the templates.</div>
         </div>
         <section id="issues" class="issues" aria-live="polite"></section>
         <section class="panel">
-          <h2>Result</h2>
+          <h2 data-i18n="ui.result">Result</h2>
           <table id="results"></table>
         </section>
         <section class="panel">
-          <h2>Download</h2>
+          <h2 data-i18n="ui.download">Download</h2>
           <div class="downloads">
             <div>
-              <h3>3D print (STL)</h3>
-              <button data-dl="stl-socket">Socket template</button>
-              <button data-dl="stl-tenon">Tenon template</button>
-              <button data-dl="stl-bracket">Support bracket</button>
+              <h3 data-i18n="ui.stlHeading">3D print (STL)</h3>
+              <button data-dl="stl-socket" data-i18n="ui.stlSocket">Socket template</button>
+              <button data-dl="stl-tenon" data-i18n="ui.stlTenon">Tenon template</button>
+              <button data-dl="stl-bracket" data-i18n="ui.stlBracket">Support bracket</button>
             </div>
             <div>
-              <h3>Print 1:1 (PDF)</h3>
-              <select id="paper" aria-label="Paper size">
+              <h3 data-i18n="ui.pdfHeading">Print 1:1 (PDF)</h3>
+              <select id="paper" data-i18n-aria-label="ui.paper" aria-label="Paper size">
                 <option value="a4">A4</option>
                 <option value="a3">A3</option>
                 <option value="letter">Letter</option>
               </select>
-              <button data-dl="pdf">Both templates</button>
+              <button data-dl="pdf" data-i18n="ui.pdfBoth">Both templates</button>
             </div>
             <div>
-              <h3>Vector (SVG / DXF)</h3>
-              <button data-dl="svg-socket">Socket SVG</button>
-              <button data-dl="svg-tenon">Tenon SVG</button>
-              <button data-dl="dxf-socket">Socket DXF</button>
-              <button data-dl="dxf-tenon">Tenon DXF</button>
+              <h3 data-i18n="ui.vectorHeading">Vector (SVG / DXF)</h3>
+              <button data-dl="svg-socket" data-i18n="ui.svgSocket">Socket SVG</button>
+              <button data-dl="svg-tenon" data-i18n="ui.svgTenon">Tenon SVG</button>
+              <button data-dl="dxf-socket" data-i18n="ui.dxfSocket">Socket DXF</button>
+              <button data-dl="dxf-tenon" data-i18n="ui.dxfTenon">Tenon DXF</button>
             </div>
           </div>
-          <p class="note">Print the PDF at 100 % (“actual size”) and check the 100 mm bar. Print the STL with the router face on the bed; no supports needed. Always make a test cut in scrap before cutting real beams.</p>
+          <p class="note" data-i18n="ui.note">Print the PDF at 100 % (“actual size”) and check the 100 mm bar. Print the STL with the router face on the bed; no supports needed. Always make a test cut in scrap before cutting real beams.</p>
         </section>
       </main>
     </div>

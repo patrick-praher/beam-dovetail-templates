@@ -6,11 +6,13 @@ import { initKernel, type Kernel } from '../core/kernel';
 import { DEFAULTS, FIELD_GROUPS, type Params } from '../core/params';
 import { buildModel, type Model } from '../core/shapes';
 import { drawingToDxf } from '../export/dxf';
+import { getLang, LANGS, num, setLang, t, type Lang } from '../i18n';
 import { drawingToSvg } from '../export/svg';
 import { meshToStl } from '../export/stl';
 import { View3D, type SceneItem } from './view3d';
 
 const STORE_KEY = 'dovetail-params-v1';
+const LANG_KEY = 'dovetail-lang';
 const WOOD_BEAM = 0xd9b380;
 const WOOD_JOIST = 0xc0894a;
 const PLASTIC = 0x2f7fd6;
@@ -56,18 +58,56 @@ function saveParams() {
   }
 }
 
+function loadLang(): Lang {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved && saved in LANGS) return saved as Lang;
+  } catch {
+    // Storage unavailable: fall back to the browser language.
+  }
+  return navigator.languages.some((l) => l.toLowerCase().startsWith('de')) ? 'de' : 'en';
+}
+
+/** Fills elements tagged with data-i18n* attributes, e.g. data-i18n="ui.reset". */
+function applyStaticText() {
+  const lookup = (path: string) => path.split('.').reduce<any>((o, k) => o?.[k], t()) as string;
+  document.documentElement.lang = getLang();
+  for (const el of document.querySelectorAll<HTMLElement>('[data-i18n]')) el.textContent = lookup(el.dataset.i18n!);
+  for (const el of document.querySelectorAll<HTMLElement>('[data-i18n-content]')) el.setAttribute('content', lookup(el.dataset.i18nContent!));
+  for (const el of document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]')) el.setAttribute('aria-label', lookup(el.dataset.i18nAriaLabel!));
+}
+
+function buildLangSelect() {
+  const select = $<HTMLSelectElement>('lang');
+  select.replaceChildren(
+    ...Object.entries(LANGS).map(([code, { name }]) => new Option(name, code, false, code === getLang())),
+  );
+  select.addEventListener('change', () => {
+    setLang(select.value as Lang);
+    try {
+      localStorage.setItem(LANG_KEY, select.value);
+    } catch {
+      // Not persisted; the app works without it.
+    }
+    applyStaticText();
+    buildForm();
+    update();
+  });
+}
+
 function buildForm() {
   form.replaceChildren();
   for (const group of FIELD_GROUPS) {
     const fs = document.createElement('fieldset');
     const legend = document.createElement('legend');
-    legend.textContent = group.title;
+    legend.textContent = t().groups[group.id];
     fs.append(legend);
     for (const field of group.fields) {
       const row = document.createElement('div');
       const label = document.createElement('label');
       label.htmlFor = `f-${field.key}`;
-      label.textContent = field.label;
+      const text = t().fields[field.key];
+      label.textContent = text.label;
       const input = document.createElement('input');
       input.id = `f-${field.key}`;
       input.name = field.key;
@@ -91,10 +131,10 @@ function buildForm() {
         wrap.append(input, unit);
         row.append(label, wrap);
       }
-      if (field.hint) {
+      if (text.hint) {
         const hint = document.createElement('div');
         hint.className = 'hint';
-        hint.textContent = field.hint;
+        hint.textContent = text.hint;
         row.append(hint);
       }
       fs.append(row);
@@ -125,30 +165,32 @@ function syncAutoFields(joint: Joint) {
   }
 }
 
-const mm = (v: number) => `${v.toFixed(1)} mm`;
+const mm = (v: number) => `${num(v, 1)} mm`;
 
 function renderResults(j: Joint, m?: Model) {
   const p = j.p;
+  const r = t().results;
+  const seat = mm(Math.abs(j.seatDrop));
   const rows: [string, string][] = [
-    ['Dovetail width at top × height', `${mm(j.width)} × ${mm(j.height)}`],
-    ['Guide offset (guide Ø − bit Ø) / 2', mm(j.offset)],
-    ['Socket: slot width at beam top', mm(2 * halfWidthAt(j.slot, j.beta, 0))],
-    ['Socket: opening on the beam face, at top', mm(2 * halfWidthAt(j.socketSurface, j.beta, 0))],
-    ['Socket: bit depth below router base', mm(p.templateThickness + j.socketDepth)],
-    ['Tenon: tongue width at joist top', mm(2 * halfWidthAt(j.tongue, j.beta, 0))],
-    ['Tenon: width at end face / at shoulder, at top', `${mm(2 * halfWidthAt(j.tenonEnd, j.beta, 0))} / ${mm(2 * halfWidthAt(j.tenonShoulder, j.beta, 0))}`],
-    ['Tenon: bit depth below router base', mm(p.templateThickness + j.tenonDepth)],
-    ['Joist top relative to beam top when seated', Math.abs(j.seatDrop) < 0.05 ? 'flush' : `${mm(Math.abs(j.seatDrop))} ${j.seatDrop > 0 ? 'below' : 'above'}`],
+    [r.dovetail, `${mm(j.width)} × ${mm(j.height)}`],
+    [r.offset, mm(j.offset)],
+    [r.slot, mm(2 * halfWidthAt(j.slot, j.beta, 0))],
+    [r.socketSurface, mm(2 * halfWidthAt(j.socketSurface, j.beta, 0))],
+    [r.socketDepth, mm(p.templateThickness + j.socketDepth)],
+    [r.tongue, mm(2 * halfWidthAt(j.tongue, j.beta, 0))],
+    [r.tenonWidths, `${mm(2 * halfWidthAt(j.tenonEnd, j.beta, 0))} / ${mm(2 * halfWidthAt(j.tenonShoulder, j.beta, 0))}`],
+    [r.tenonDepth, mm(p.templateThickness + j.tenonDepth)],
+    [r.seat, Math.abs(j.seatDrop) < 0.05 ? r.flush : j.seatDrop > 0 ? r.below(seat) : r.above(seat)],
   ];
   if (m) {
     const br = m.tenon.bracket;
     if (br) {
-      rows.push(['Support bracket size', `${br.size.map((v) => v.toFixed(0)).join(' × ')} mm`]);
-      rows.push(['Support bracket screws', `2 × Ø${p.screwDiameter} × ${br.frameScrew} into frame, 1 × Ø${p.screwDiameter} × ${br.joistScrew} into joist`]);
+      rows.push([r.bracketSize, `${br.size.map((v) => v.toFixed(0)).join(' × ')} mm`]);
+      rows.push([r.bracketScrews, r.bracketScrewsValue(num(p.screwDiameter), br.frameScrew, br.joistScrew)]);
     }
-    for (const t of [m.socket, m.tenon]) {
-      const w = t.bounds.x1 - t.bounds.x0, h = t.bounds.y1 - t.bounds.y0;
-      rows.push([`${t.name === 'socket' ? 'Socket' : 'Tenon'} template size`, `${w.toFixed(0)} × ${h.toFixed(0)} × ${(p.templateThickness + p.lipDepth).toFixed(0)} mm`]);
+    for (const tm of [m.socket, m.tenon]) {
+      const w = tm.bounds.x1 - tm.bounds.x0, h = tm.bounds.y1 - tm.bounds.y0;
+      rows.push([tm.name === 'socket' ? r.socketSize : r.tenonSize, `${w.toFixed(0)} × ${h.toFixed(0)} × ${(p.templateThickness + p.lipDepth).toFixed(0)} mm`]);
     }
   }
   $('results').replaceChildren(
@@ -168,17 +210,17 @@ function renderIssues(j: Joint, m?: Model) {
   if (m) {
     const fits = (w: number, h: number) => (w <= p.bedX && h <= p.bedY) || (w <= p.bedY && h <= p.bedX);
     const p = j.p;
-    for (const t of [m.socket, m.tenon]) {
-      const w = t.bounds.x1 - t.bounds.x0, h = t.bounds.y1 - t.bounds.y0;
+    for (const tm of [m.socket, m.tenon]) {
+      const w = tm.bounds.x1 - tm.bounds.x0, h = tm.bounds.y1 - tm.bounds.y0;
       if (!fits(w, h)) {
         issues.push({
           level: 'warn',
-          msg: `The ${t.name} template (${w.toFixed(0)} × ${h.toFixed(0)} mm) does not fit the ${p.bedX} × ${p.bedY} mm print bed.${t.name === 'tenon' && p.frame ? ' Turn off the support frame, reduce the border, ' : ' Reduce the border, '}or use the 1:1 PDF / DXF to cut it from plywood.`,
+          msg: t().issues.bedTooSmall(tm.name, w.toFixed(0), h.toFixed(0), num(p.bedX), num(p.bedY), tm.name === 'tenon' && p.frame),
         });
       }
     }
   }
-  const names = { error: 'Error', warn: 'Check', info: 'Tip' };
+  const names = t().levels;
   $('issues').replaceChildren(
     ...issues.map((i) => {
       const div = document.createElement('div');
@@ -240,10 +282,10 @@ function update() {
       model = buildModel(kernel, joint);
       current = { joint, model, drawings: buildDrawings(joint, model) };
     } catch (e) {
-      joint.issues.unshift({ level: 'error', msg: `Could not build the geometry: ${(e as Error).message}` });
+      joint.issues.unshift({ level: 'error', msg: t().ui.buildFailed((e as Error).message) });
     }
   }
-  blockedEl.textContent = kernel ? 'Fix the errors below to see the templates.' : 'Loading geometry kernel…';
+  blockedEl.textContent = kernel ? t().ui.blocked : t().ui.loading;
   renderResults(joint, model);
   renderIssues(joint, model);
   for (const b of document.querySelectorAll<HTMLButtonElement>('[data-dl]')) {
@@ -284,6 +326,9 @@ async function download(kind: string) {
   else if (what === 'dxf') save(`${name}.dxf`, drawingToDxf(drawing), 'application/dxf');
 }
 
+setLang(loadLang());
+applyStaticText();
+buildLangSelect();
 buildForm();
 form.addEventListener('input', update);
 form.addEventListener('submit', (e) => e.preventDefault());
@@ -311,6 +356,6 @@ initKernel(wasmUrl).then(
     update();
   },
   (e: Error) => {
-    blockedEl.textContent = `Could not load the geometry kernel: ${e.message}`;
+    blockedEl.textContent = t().ui.kernelFailed(e.message);
   },
 );

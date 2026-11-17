@@ -1,3 +1,4 @@
+import { num, t } from '../i18n';
 import type { Params } from './params';
 
 export interface Pt {
@@ -78,15 +79,17 @@ export function computeJoint(p: Params): Joint {
   const err = (msg: string) => issues.push({ level: 'error', msg });
   const warn = (msg: string) => issues.push({ level: 'warn', msg });
   const info = (msg: string) => issues.push({ level: 'info', msg });
+  const m = t().issues;
+  const label = (k: string) => t().fields[k as keyof Params]?.label ?? k;
 
   for (const [k, v] of Object.entries(p)) {
-    if (typeof v === 'number' && !Number.isFinite(v)) err(`"${k}" is not a number.`);
+    if (typeof v === 'number' && !Number.isFinite(v)) err(m.notANumber(label(k)));
   }
   const positive: (keyof Params)[] = [
     'joistWidth', 'joistHeight', 'beamWidth', 'beamHeight', 'tenonLength',
     'bitDiameter', 'bushingDiameter', 'templateThickness', 'border', 'leadIn',
   ];
-  for (const k of positive) if (!((p[k] as number) > 0)) err(`"${k}" must be greater than 0.`);
+  for (const k of positive) if (!((p[k] as number) > 0)) err(m.notPositive(label(k)));
 
   const width = p.autoSize ? Math.round(p.joistWidth * 0.6) : p.tailWidth;
   const height = p.autoSize ? Math.round(p.joistHeight * 0.7) : p.tailHeight;
@@ -128,34 +131,34 @@ export function computeJoint(p: Params): Joint {
   if (sinB > 1e-6) seatDrop = p.clearance >= 0 ? Math.min(p.clearance / sinB, bottomGap) : p.clearance / sinB;
   else seatDrop = Math.max(0, bottomGap);
 
-  const f = (n: number) => n.toFixed(1);
+  const f = (n: number) => num(n, 1);
 
   if (!(r > 0) || !(yc > 0)) {
-    err('Dovetail shape is impossible: the height must be larger than the bottom radius and the flanks must not cross. Increase the width, or reduce the height or taper.');
+    err(m.impossible);
   } else {
     if (r < p.bitDiameter / 2) {
-      err(`The round bottom of the socket (radius ${f(r)} mm) is smaller than the bit radius (${f(p.bitDiameter / 2)} mm). Increase the width, reduce the height or taper, or use a smaller bit.`);
+      err(m.bottomTooSmall(f(r), f(p.bitDiameter / 2)));
     }
     if (tongue.rho < 2) {
-      err(`The tenon template would taper to nothing (tip radius ${f(tongue.rho)} mm). Increase the width, or reduce tenon length, bit angle, guide Ø or clearance.`);
+      err(m.tongueTooThin(f(tongue.rho)));
     }
   }
-  if (neckDiameter <= 0) err('The bit angle and cutting depth do not fit the bit diameter (the bit would have no neck). Reduce tenon length or bit angle.');
-  else if (neckDiameter < 6) warn(`The bit is only ${f(neckDiameter)} mm thick at the wood surface — check the real bit, it is probably shorter or less steep than entered.`);
+  if (neckDiameter <= 0) err(m.noNeck);
+  else if (neckDiameter < 6) warn(m.thinNeck(f(neckDiameter)));
 
-  if (socketDepth > p.bitCutLength) warn(`Socket depth (${f(socketDepth)} mm) exceeds the cutting length of the bit (${f(p.bitCutLength)} mm).`);
-  if (offset < 0) warn('The bit is larger than the template guide: it cannot be pulled back through the guide. Always enter and leave the cut sideways and never lift the router while the bit is under the template.');
-  else if (offset < 1) warn('Bit and template guide are almost the same diameter. Check that the bit really passes through the guide without touching it.');
-  if (p.bushingLength >= p.templateThickness) warn(`The guide collar (${f(p.bushingLength)} mm) is not shorter than the template plate (${f(p.templateThickness)} mm): the router would ride on the collar instead of the template. Use a thicker plate or shorten the collar.`);
-  if (socketDepth > p.beamWidth / 2) warn('The socket is deeper than half the main beam width.');
-  if (height > p.joistHeight) warn('The dovetail is taller than the joist.');
-  if (height > p.beamHeight - 15) warn('Less than 15 mm of wood remains under the socket in the main beam.');
-  if (width > p.joistWidth - 16) warn('The shoulders left and right of the tenon are narrower than 8 mm.');
-  if (p.taperDeg > 0 && p.clearance > 0 && seatDrop > 0.5) warn(`With this clearance the tapered tenon slides ${f(seatDrop)} mm further down before it is tight, so the joist ends up below the beam top. Use 0 clearance for a flush wedge fit, or shift the template instead.`);
-  if (p.supportBracket && !p.frame) warn('The support bracket needs the support frame around the tenon template; it is left out.');
-  else if (p.supportBracket && !(p.screwDiameter > 0)) warn('The support bracket is screwed on; enter a screw hole Ø to get it.');
-  if (p.taperDeg === 0 && p.bottomRelief > 0) info('Without taper the joist rests on the round bottom; the bottom relief lowers it by the same amount.');
-  if (p.taperDeg > 0) info(`Fine tuning: moving a template 1 mm up or down on the wood changes the flank fit by ${(sinB).toFixed(3)} mm per side.`);
+  if (socketDepth > p.bitCutLength) warn(m.tooDeep(f(socketDepth), f(p.bitCutLength)));
+  if (offset < 0) warn(m.bitLarger);
+  else if (offset < 1) warn(m.bitSameSize);
+  if (p.bushingLength >= p.templateThickness) warn(m.collarTooLong(f(p.bushingLength), f(p.templateThickness)));
+  if (socketDepth > p.beamWidth / 2) warn(m.socketHalfBeam);
+  if (height > p.joistHeight) warn(m.tallerThanJoist);
+  if (height > p.beamHeight - 15) warn(m.thinUnderSocket);
+  if (width > p.joistWidth - 16) warn(m.narrowShoulders);
+  if (p.taperDeg > 0 && p.clearance > 0 && seatDrop > 0.5) warn(m.seatDrop(f(seatDrop)));
+  if (p.supportBracket && !p.frame) warn(m.bracketNeedsFrame);
+  else if (p.supportBracket && !(p.screwDiameter > 0)) warn(m.bracketNeedsScrews);
+  if (p.taperDeg === 0 && p.bottomRelief > 0) info(m.noTaperRelief);
+  if (p.taperDeg > 0) info(m.fineTuning(num(sinB, 3)));
 
   return {
     p, width, height, beta, alpha, offset, socketDepth, tenonDepth, neckDiameter,
