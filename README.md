@@ -93,7 +93,11 @@ template up or down by 1 mm changes the flank fit by `sin(taper)` mm.
    over the top face, centre notch on your layout line. Screw or clamp it.
 3. **Tenon template:** lay it on the end grain of the joist, lip on the top
    face, centre notches on the joist centreline. The screw holes go into the
-   tenon, where they are hidden later.
+   tenon, where they are hidden later. If the frame flexes under the router,
+   turn on the **support bracket**: a separate printed L-bracket screwed to the
+   frame's bottom bar and up into the underside of the joist. It stays below
+   the bit tip and outside the guide's path, so it never gets cut. Print it
+   lying on its side as exported.
 4. Set the bit depth **below the router base** to the value shown in the
    result table (plate thickness + cut depth).
 5. A dovetail bit cannot plunge: start with the bit outside the wood (above

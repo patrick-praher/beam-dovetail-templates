@@ -152,6 +152,8 @@ export function computeJoint(p: Params): Joint {
   if (height > p.beamHeight - 15) warn('Less than 15 mm of wood remains under the socket in the main beam.');
   if (width > p.joistWidth - 16) warn('The shoulders left and right of the tenon are narrower than 8 mm.');
   if (p.taperDeg > 0 && p.clearance > 0 && seatDrop > 0.5) warn(`With this clearance the tapered tenon slides ${f(seatDrop)} mm further down before it is tight, so the joist ends up below the beam top. Use 0 clearance for a flush wedge fit, or shift the template instead.`);
+  if (p.supportBracket && !p.frame) warn('The support bracket needs the support frame around the tenon template; it is left out.');
+  else if (p.supportBracket && !(p.screwDiameter > 0)) warn('The support bracket is screwed on; enter a screw hole Ø to get it.');
   if (p.taperDeg === 0 && p.bottomRelief > 0) info('Without taper the joist rests on the round bottom; the bottom relief lowers it by the same amount.');
   if (p.taperDeg > 0) info(`Fine tuning: moving a template 1 mm up or down on the wood changes the flank fit by ${(sinB).toFixed(3)} mm per side.`);
 

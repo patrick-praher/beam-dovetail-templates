@@ -28,6 +28,7 @@ export interface Params {
   lipDepth: number;
   screwDiameter: number;
   frame: boolean;
+  supportBracket: boolean;
   bedX: number;
   bedY: number;
 }
@@ -56,6 +57,7 @@ export const DEFAULTS: Params = {
   lipDepth: 20,
   screwDiameter: 4.5,
   frame: true,
+  supportBracket: false,
   bedX: 256,
   bedY: 256,
 };
@@ -124,6 +126,7 @@ export const FIELD_GROUPS: FieldGroup[] = [
       { key: 'lipDepth', label: 'Stop lip depth', unit: 'mm', min: 0, hint: 'Lips hook over the top face of the wood. 0 = no lips' },
       { key: 'screwDiameter', label: 'Screw hole Ø', unit: 'mm', step: 0.5, min: 0, hint: '0 = no holes (clamp the template instead)' },
       { key: 'frame', label: 'Support frame around tenon template' },
+      { key: 'supportBracket', label: 'Screwed support bracket under the frame', hint: 'Separate printed L-bracket: screwed to the bottom of the frame and into the underside of the joist, so the frame cannot flex under the router' },
       { key: 'bedX', label: 'Print bed X', unit: 'mm', min: 50 },
       { key: 'bedY', label: 'Print bed Y', unit: 'mm', min: 50 },
     ],

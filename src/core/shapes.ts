@@ -14,6 +14,19 @@ export interface Rect {
   y1: number;
 }
 
+/** Separate L-bracket that ties the bottom of the tenon frame to the joist. */
+export interface Bracket {
+  mesh: MeshData;
+  /** Lying on its side: the L profile is on the bed, no overhangs. */
+  printMesh: MeshData;
+  /** Outline seen from the router side, in the 2D joint frame. */
+  footprint: Rect;
+  size: [number, number, number];
+  /** Suggested screw lengths in mm. */
+  frameScrew: number;
+  joistScrew: number;
+}
+
 export interface TemplateModel {
   name: string;
   /** Closed polygons (outer boundaries and holes) in the 2D joint frame. */
@@ -25,6 +38,7 @@ export interface TemplateModel {
   mesh: MeshData;
   /** Turned over for printing: router face on the bed. */
   printMesh: MeshData;
+  bracket?: Bracket;
 }
 
 export interface Model {
@@ -38,11 +52,15 @@ export interface Model {
 
 const CORNER = 3;
 const NOTCH = 3;
+const BRACKET_WIDTH = 40;
+/** Wood left under the joist screw's counterbore in the bracket foot. */
+const BRACKET_SCREW_GRIP = 12;
 
 export function buildModel(k: Kernel, j: Joint): Model {
   const { p, beta } = j;
   const T = p.templateThickness;
   const B = p.border;
+  const cb = Math.min(3.5, T / 2);
   // Wasm objects are not garbage collected; everything created here is
   // registered and freed once the meshes are extracted.
   const trash: { delete(): void }[] = [];
@@ -109,12 +127,30 @@ export function buildModel(k: Kernel, j: Joint): Model {
     }
     return { positions, indices: m.indices };
   };
+  /** (X, Y, Z) → (Y, Z, X), then moved to the origin. A rotation, so normals stay outward. */
+  const onSide = (m: MeshData): MeshData => {
+    const positions = new Float32Array(m.positions.length);
+    const min = [Infinity, Infinity, Infinity];
+    for (let i = 0; i < positions.length; i += 3) {
+      for (let a = 0; a < 3; a++) {
+        positions[i + a] = m.positions[i + ((a + 1) % 3)];
+        min[a] = Math.min(min[a], positions[i + a]);
+      }
+    }
+    for (let i = 0; i < positions.length; i++) positions[i] -= min[i % 3];
+    return { positions, indices: m.indices };
+  };
+  /** Cylinder along the joint y axis from y0 to y1. */
+  const rodY = (x: number, y0: number, y1: number, z: number, d: number): Manifold =>
+    keep(keep(keep(k.Manifold.cylinder(y1 - y0, d / 2, d / 2, 32)).rotate([90, 0, 0])).translate([x, -y0, z]));
+  /** Cylinder along z from z0 to z1. */
+  const rodZ = (x: number, y: number, z0: number, z1: number, d: number): Manifold =>
+    keep(keep(k.Manifold.cylinder(z1 - z0, d / 2, d / 2, 32)).translate([x, -y, z0]));
 
   const template = (name: string, plate: CrossSection, holes: Pt[], lips: Rect[], bounds: Rect): TemplateModel => {
     let plate2d = plate;
     for (const h of holes) plate2d = sub(plate2d, circle(h.x, h.y, p.screwDiameter));
     let solid = extrude(plate2d, 0, T);
-    const cb = Math.min(3.5, T / 2);
     for (const h of holes) solid = keep(solid.subtract(extrude(circle(h.x, h.y, p.screwDiameter * 2), T - cb, T + 1)));
     for (const l of lips) solid = keep(solid.add(extrude(rect(l), -p.lipDepth, 0.5)));
     const mesh = meshOf(solid);
@@ -160,11 +196,13 @@ export function buildModel(k: Kernel, j: Joint): Model {
     const tongue = uShape(j.tongue, -Et - 1);
     let tPlate: CrossSection;
     let tBounds: Rect;
+    let windowBottom: number | undefined;
     if (p.frame) {
       // The window lets the guide run fully clear of the joist on three
       // sides, so the bit can enter from outside the wood.
       const wHalf = Math.max(p.joistWidth / 2 + guideMax / 2 + 2, tongueTop + p.bushingDiameter + 2);
       const wBottom = Math.max(p.joistHeight + guideMax / 2 + 2, tongueBottom + p.bushingDiameter + 2);
+      windowBottom = wBottom;
       tBounds = { x0: -wHalf - B, y0: -Et - B, x1: wHalf + B, y1: wBottom + B };
       tPlate = add(sub(roundRect(tBounds), rect({ x0: -wHalf, y0: -Et, x1: wHalf, y1: wBottom })), tongue);
       tPlate = sub(tPlate, notch(0, tBounds.y1, 0, -1));
@@ -183,10 +221,46 @@ export function buildModel(k: Kernel, j: Joint): Model {
       if (j.tongue.yc - upper >= 25) tHoles.push({ x: 0, y: upper });
       tHoles.push({ x: 0, y: j.tongue.yc });
     }
+    // Support bracket: its leg sits under the frame's bottom bar, beyond the
+    // bit's reach; its foot runs below the bit tip to the underside of the
+    // joist. Two screws hold it to the frame, one goes up into the joist.
+    let bracketPlan: { yLeg: number; yOut: number; zTop: number; zBot: number; sx: number; sy: number } | undefined;
+    if (windowBottom !== undefined && p.supportBracket && hasHoles) {
+      const yLeg = windowBottom + overreach + 1;
+      const yOut = tBounds.y1 - NOTCH - 1;
+      const foot = Math.max(12, p.screwDiameter * 2 + 7);
+      const zTop = -(j.tenonDepth + 2);
+      bracketPlan = { yLeg, yOut, zTop, zBot: zTop - foot, sx: BRACKET_WIDTH / 4 + 2, sy: (yLeg + yOut) / 2 };
+      tHoles.push({ x: -bracketPlan.sx, y: bracketPlan.sy }, { x: bracketPlan.sx, y: bracketPlan.sy });
+    }
     const tLips: Rect[] = [];
     const lipHalf = halfWidthAt(j.tongue, beta, 0) - overreach - 2;
     if (hasLips && lipHalf >= 4) tLips.push({ x0: -lipHalf, y0: -Et - B + CORNER, x1: lipHalf, y1: 0 });
     const tenon = template('tenon', tPlate, tHoles, tLips, tBounds);
+    if (bracketPlan) {
+      const { yLeg, yOut, zTop, zBot, sx, sy } = bracketPlan;
+      const hw = BRACKET_WIDTH / 2;
+      const d = p.screwDiameter;
+      let solid = keep(box(-hw, hw, -yOut, -yLeg, zBot, 0).add(box(-hw, hw, -yOut, -p.joistHeight, zBot, zTop)));
+      const pilot = Math.min(-zBot - 3, 20);
+      for (const x of [-sx, sx]) solid = keep(solid.subtract(rodZ(x, sy, -pilot, 1, d * 0.75)));
+      const zMid = (zTop + zBot) / 2;
+      solid = keep(solid.subtract(rodY(0, p.joistHeight - 1, yOut + 1, zMid, d + 0.5)));
+      const yGrip = p.joistHeight + BRACKET_SCREW_GRIP;
+      const counterbored = yOut - yGrip >= 2;
+      if (counterbored) solid = keep(solid.subtract(rodY(0, yGrip, yOut + 1, zMid, d * 2 + 1)));
+      const grip = counterbored ? BRACKET_SCREW_GRIP : yOut - p.joistHeight;
+      const up5 = (v: number) => Math.ceil(v / 5) * 5;
+      const mesh = meshOf(solid);
+      tenon.bracket = {
+        mesh,
+        printMesh: onSide(mesh),
+        footprint: { x0: -hw, y0: p.joistHeight, x1: hw, y1: yOut },
+        size: [BRACKET_WIDTH, yOut - p.joistHeight, -zBot],
+        frameScrew: up5(T - cb + pilot * 0.8),
+        joistScrew: up5(grip + 30),
+      };
+    }
 
     // ---------- Wood ----------
     const tanA = Math.tan(j.alpha);

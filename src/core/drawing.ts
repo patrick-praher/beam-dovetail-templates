@@ -116,11 +116,19 @@ export function buildDrawings(j: Joint, m: Model): Drawing[] {
   });
   t.paths.push({ kind: 'cut', closed: false, pts: uContour(j.tenonEnd, beta, 0) });
   t.paths.push({ kind: 'cutDeep', closed: false, pts: uContour(j.tenonShoulder, beta, 0) });
+  const br = m.tenon.bracket;
+  if (br) {
+    const r = br.footprint;
+    t.paths.push({ kind: 'lip', closed: true, pts: [{ x: r.x0, y: r.y0 }, { x: r.x1, y: r.y0 }, { x: r.x1, y: r.y1 }, { x: r.x0, y: r.y1 }] });
+  }
   const tenon = finish('tenon', tTitle, m.tenon, t.paths, t.labels, [
     `Tongue width at joist top: ${f(2 * halfWidthAt(j.tongue, beta, 0))} mm   ·   tongue tip radius: ${f(j.tongue.rho)} mm`,
     `Bit Ø ${f(p.bitDiameter)} / ${f(p.bitAngleDeg)}°   ·   guide Ø ${f(p.bushingDiameter)}   ·   plate ${f(T)} mm`,
     `Bit depth below router base: ${f(T + j.tenonDepth)} mm (tenon ${f(j.tenonDepth)} mm long)`,
     'Solid blue: tenon at its end face. Dashed blue: tenon at the shoulder.',
+    ...(br
+      ? [`Support bracket (dotted, separate STL, ${br.size.map((v) => f(v)).join(' × ')} mm): 2 screws ${f(p.screwDiameter)} × ${br.frameScrew} through the frame, 1 screw ${f(p.screwDiameter)} × ${br.joistScrew} up into the joist.`]
+      : []),
   ]);
 
   return [socket, tenon];

@@ -14,6 +14,7 @@ const STORE_KEY = 'dovetail-params-v1';
 const WOOD_BEAM = 0xd9b380;
 const WOOD_JOIST = 0xc0894a;
 const PLASTIC = 0x2f7fd6;
+const BRACKET = 0xe0702a;
 
 type ViewName = 'drawings' | 'joint' | 'socket' | 'tenon';
 
@@ -140,6 +141,11 @@ function renderResults(j: Joint, m?: Model) {
     ['Joist top relative to beam top when seated', Math.abs(j.seatDrop) < 0.05 ? 'flush' : `${mm(Math.abs(j.seatDrop))} ${j.seatDrop > 0 ? 'below' : 'above'}`],
   ];
   if (m) {
+    const br = m.tenon.bracket;
+    if (br) {
+      rows.push(['Support bracket size', `${br.size.map((v) => v.toFixed(0)).join(' × ')} mm`]);
+      rows.push(['Support bracket screws', `2 × Ø${p.screwDiameter} × ${br.frameScrew} into frame, 1 × Ø${p.screwDiameter} × ${br.joistScrew} into joist`]);
+    }
     for (const t of [m.socket, m.tenon]) {
       const w = t.bounds.x1 - t.bounds.x0, h = t.bounds.y1 - t.bounds.y0;
       rows.push([`${t.name === 'socket' ? 'Socket' : 'Tenon'} template size`, `${w.toFixed(0)} × ${h.toFixed(0)} × ${(p.templateThickness + p.lipDepth).toFixed(0)} mm`]);
@@ -211,6 +217,7 @@ function renderView() {
     items = [{ mesh: model.beam, color: WOOD_BEAM }, { mesh: model.socket.mesh, color: PLASTIC, opacity: 0.85 }];
   } else if (view === 'tenon') {
     items = [{ mesh: model.joist, color: WOOD_JOIST }, { mesh: model.tenon.mesh, color: PLASTIC, opacity: 0.85 }];
+    if (model.tenon.bracket) items.push({ mesh: model.tenon.bracket.mesh, color: BRACKET, opacity: 0.9 });
   } else {
     const lift = explode.checked ? joint.height * 0.9 : -joint.seatDrop;
     items = [
@@ -239,7 +246,9 @@ function update() {
   blockedEl.textContent = kernel ? 'Fix the errors below to see the templates.' : 'Loading geometry kernel…';
   renderResults(joint, model);
   renderIssues(joint, model);
-  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-dl]')) b.disabled = !current;
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-dl]')) {
+    b.disabled = !current || (b.dataset.dl === 'stl-bracket' && !current.model.tenon.bracket);
+  }
   renderView();
 }
 
@@ -254,13 +263,18 @@ function save(name: string, data: BlobPart, type: string) {
 async function download(kind: string) {
   if (!current) return;
   const { model, drawings, joint } = current;
-  const [what, which] = kind.split('-') as [string, 'socket' | 'tenon' | undefined];
+  const [what, which] = kind.split('-') as [string, 'socket' | 'tenon' | 'bracket' | undefined];
   const tag = `${joint.p.joistWidth}x${joint.p.joistHeight}`;
   if (what === 'pdf') {
     // jsPDF is large; load it only when a PDF is actually requested.
     const { drawingsToPdf } = await import('../export/pdf');
     const paper = $<HTMLSelectElement>('paper').value as 'a4' | 'a3' | 'letter';
     save(`dovetail-templates-${tag}.pdf`, drawingsToPdf(drawings, paper), 'application/pdf');
+    return;
+  }
+  if (which === 'bracket') {
+    const bracket = model.tenon.bracket;
+    if (bracket) save(`dovetail-support-bracket-${tag}.stl`, meshToStl(bracket.printMesh), 'model/stl');
     return;
   }
   const drawing = drawings.find((d) => d.id === which)!;

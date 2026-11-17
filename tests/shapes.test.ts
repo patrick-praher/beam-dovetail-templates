@@ -73,6 +73,29 @@ describe('solids', () => {
     expect(volume(m.tenon.mesh)).toBeGreaterThan(1000);
   });
 
+  it('support bracket stays clear of the bit and prints flat', () => {
+    const { m, j } = build({ supportBracket: true });
+    const br = m.tenon.bracket!;
+    expect(br).toBeDefined();
+    expect(volume(br.mesh)).toBeGreaterThan(1000);
+    expect(volume(br.printMesh)).toBeCloseTo(volume(br.mesh), 0);
+    expect(zRange(br.printMesh)).toEqual([0, br.size[0]]);
+    // Two extra screw holes in the frame.
+    expect(m.tenon.outline.length).toBe(build().m.tenon.outline.length + 2);
+    // Nothing of the bracket in the zone the bit sweeps (above the bit tip,
+    // inside the frame window minus the guide offset).
+    const P = br.mesh.positions;
+    const window = m.tenon.bounds.y1 - j.p.border;
+    for (let i = 0; i < P.length; i += 3) {
+      if (P[i + 2] > -j.tenonDepth) expect(-P[i + 1]).toBeGreaterThanOrEqual(window - Math.min(0, j.offset) - 1e-3);
+    }
+  });
+
+  it('leaves the bracket out without frame or screws', () => {
+    expect(build({ supportBracket: true, frame: false }).m.tenon.bracket).toBeUndefined();
+    expect(build({ supportBracket: true, screwDiameter: 0 }).m.tenon.bracket).toBeUndefined();
+  });
+
   it('exports every format', () => {
     const { m, j } = build();
     const drawings = buildDrawings(j, m);
