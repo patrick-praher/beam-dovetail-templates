@@ -52,7 +52,11 @@ export interface Model {
 
 const CORNER = 3;
 const NOTCH = 3;
-/** Thinnest wall left around a screw counterbore: two perimeters with a 0.4 mm nozzle. */
+/** Countersunk (Spax style) screws: head Ø = 2 × screw Ø, 90° under the head. */
+const HEAD_FACTOR = 2;
+/** How far the head sits below the router face. */
+const SINK_RECESS = 0.5;
+/** Thinnest wall left around a screw countersink: two perimeters with a 0.4 mm nozzle. */
 const MIN_WALL = 0.8;
 const BRACKET_WIDTH = 40;
 /** Wood left under the joist screw's counterbore in the bracket foot. */
@@ -62,7 +66,10 @@ export function buildModel(k: Kernel, j: Joint): Model {
   const { p, beta } = j;
   const T = p.templateThickness;
   const B = p.border;
-  const cb = Math.min(3.5, T / 2);
+  const head = p.screwDiameter * HEAD_FACTOR;
+  // 90° countersink: the cone is half as deep as it is wide at the top.
+  const sinkTop = T - SINK_RECESS;
+  const sinkBottom = sinkTop - (head - p.screwDiameter) / 2;
   // Wasm objects are not garbage collected; everything created here is
   // registered and freed once the meshes are extracted.
   const trash: { delete(): void }[] = [];
@@ -142,18 +149,21 @@ export function buildModel(k: Kernel, j: Joint): Model {
     for (let i = 0; i < positions.length; i++) positions[i] -= min[i % 3];
     return { positions, indices: m.indices };
   };
-  /** Cylinder along the joint y axis from y0 to y1. */
-  const rodY = (x: number, y0: number, y1: number, z: number, d: number): Manifold =>
-    keep(keep(keep(k.Manifold.cylinder(y1 - y0, d / 2, d / 2, 32)).rotate([90, 0, 0])).translate([x, -y0, z]));
-  /** Cylinder along z from z0 to z1. */
-  const rodZ = (x: number, y: number, z0: number, z1: number, d: number): Manifold =>
-    keep(keep(k.Manifold.cylinder(z1 - z0, d / 2, d / 2, 32)).translate([x, -y, z0]));
+  /** Cylinder (or cone, Ø d0 → d1) along the joint y axis from y0 to y1. */
+  const rodY = (x: number, y0: number, y1: number, z: number, d0: number, d1 = d0): Manifold =>
+    keep(keep(keep(k.Manifold.cylinder(y1 - y0, d0 / 2, d1 / 2, 32)).rotate([90, 0, 0])).translate([x, -y0, z]));
+  /** Cylinder (or cone, Ø d0 → d1) along z from z0 to z1. */
+  const rodZ = (x: number, y: number, z0: number, z1: number, d0: number, d1 = d0): Manifold =>
+    keep(keep(k.Manifold.cylinder(z1 - z0, d0 / 2, d1 / 2, 32)).translate([x, -y, z0]));
 
   const template = (name: string, plate: CrossSection, holes: Pt[], lips: Rect[], bounds: Rect): TemplateModel => {
     let plate2d = plate;
     for (const h of holes) plate2d = sub(plate2d, circle(h.x, h.y, p.screwDiameter));
     let solid = extrude(plate2d, 0, T);
-    for (const h of holes) solid = keep(solid.subtract(extrude(circle(h.x, h.y, p.screwDiameter * 2), T - cb, T + 1)));
+    for (const h of holes) {
+      solid = keep(solid.subtract(rodZ(h.x, h.y, sinkBottom, sinkTop, p.screwDiameter, head)));
+      solid = keep(solid.subtract(rodZ(h.x, h.y, sinkTop, T + 1, head)));
+    }
     for (const l of lips) solid = keep(solid.add(extrude(rect(l), -p.lipDepth, 0.5)));
     const mesh = meshOf(solid);
     return { name, outline: polygons(plate2d), lips, bounds, mesh, printMesh: flipped(mesh) };
@@ -217,7 +227,7 @@ export function buildModel(k: Kernel, j: Joint): Model {
     }
     tPlate = sub(tPlate, notch(0, tBounds.y0, 0, 1));
     const tHoles: Pt[] = [];
-    // The holes sit on the arc centre, so the counterbore (radius = screw Ø)
+    // The holes sit on the arc centre, so the countersink (radius = screw Ø)
     // leaves rho − Ø of plastic to the tongue edge.
     if (hasHoles && j.tongue.rho >= p.screwDiameter + MIN_WALL) {
       const upper = Math.max(15, j.tongue.yc * 0.3);
@@ -251,7 +261,11 @@ export function buildModel(k: Kernel, j: Joint): Model {
       solid = keep(solid.subtract(rodY(0, p.joistHeight - 1, yOut + 1, zMid, d + 0.5)));
       const yGrip = p.joistHeight + BRACKET_SCREW_GRIP;
       const counterbored = yOut - yGrip >= 2;
-      if (counterbored) solid = keep(solid.subtract(rodY(0, yGrip, yOut + 1, zMid, d * 2 + 1)));
+      if (counterbored) {
+        // Bore for the driver, ending in a 90° seat for the countersunk head.
+        solid = keep(solid.subtract(rodY(0, yGrip, yOut + 1, zMid, head + 1)));
+        solid = keep(solid.subtract(rodY(0, yGrip - (head - d - 0.5) / 2, yGrip, zMid, d + 0.5, head)));
+      }
       const grip = counterbored ? BRACKET_SCREW_GRIP : yOut - p.joistHeight;
       const up5 = (v: number) => Math.ceil(v / 5) * 5;
       const mesh = meshOf(solid);
@@ -260,7 +274,7 @@ export function buildModel(k: Kernel, j: Joint): Model {
         printMesh: onSide(mesh),
         footprint: { x0: -hw, y0: p.joistHeight, x1: hw, y1: yOut },
         size: [BRACKET_WIDTH, yOut - p.joistHeight, -zBot],
-        frameScrew: up5(T - cb + pilot * 0.8),
+        frameScrew: up5(sinkTop + pilot * 0.8),
         joistScrew: up5(grip + 30),
       };
     }

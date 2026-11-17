@@ -23,7 +23,7 @@ for 3D printing (STL) or as 1:1 drawings (PDF, SVG, DXF).
    angle, clearance, taper, bottom relief, validation messages. ✅
 3. **Template shapes** (`src/core/shapes.ts`): socket plate with slot and
    lead-in; tenon plate with tongue and optional support frame; stop lips,
-   screw holes with counterbores, alignment notches; wood solids for preview. ✅
+   screw holes with 90° countersinks, alignment notches; wood solids for preview. ✅
 4. **Drawings** (`src/core/drawing.ts`): outline, wood, cut lines at surface and
    depth, centreline, overall dimensions, 100 mm scale bar, settings notes. ✅
 5. **Exports** (`src/export`): binary STL, SVG in mm, DXF polylines, tiled PDF. ✅
