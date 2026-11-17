@@ -14,6 +14,9 @@ the finished joint, and warns when something cannot work.
 
 Everything runs locally in the browser — no server, no upload.
 
+If this saves you a template or two, you can
+[support the project on GitHub Sponsors](https://github.com/sponsors/patrick-praher).
+
 ## Run it
 
 ```sh
@@ -21,6 +24,7 @@ npm install
 npm run dev      # development server
 npm test         # geometry and export tests
 npm run build    # static site in dist/
+npm run presets  # ready-made STL sets for common joist sizes in makerworld/
 ```
 
 `dist/` can be hosted anywhere. `.github/workflows/pages.yml` deploys it to
@@ -122,9 +126,14 @@ src/core/drawing.ts   1:1 drawings shared by SVG, DXF and PDF
 src/export/           STL, SVG, DXF, PDF writers
 src/ui/               form, 2D view, three.js view
 tests/                vitest
+scripts/              preset generator for ready-made STL sets
 docs/PLAN.md          implementation plan and status
 ```
 
 ## License
 
-MIT
+[PolyForm Noncommercial 1.0.0](LICENSE): free for personal, hobby, educational
+and other non-commercial use, including templates you make for your own
+projects. Commercial use — for example selling templates made with this tool,
+or running it as part of a paid service — needs a separate licence; ask via a
+GitHub issue.
