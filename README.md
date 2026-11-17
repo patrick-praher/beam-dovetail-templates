@@ -12,6 +12,8 @@ You enter the wood sizes, the dovetail bit, the template guide (copy ring) and
 the fit; the app shows the templates in 2D, the templates on the wood in 3D and
 the finished joint, and warns when something cannot work.
 
+**Use it online: https://patrick-praher.github.io/beam-dovetail-templates/**
+
 Everything runs locally in the browser — no server, no upload.
 
 If this saves you a template or two, you can
