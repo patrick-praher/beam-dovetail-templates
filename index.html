@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Beam Dovetail Template Generator</title>
+    <meta name="description" content="Generate 3D-printable and paper router templates for large dovetail joints in wooden beams." />
+  </head>
+  <body>
+    <header>
+      <h1>Beam Dovetail Template Generator</h1>
+      <p>Router templates for big dovetail joints between a joist and a main beam — as STL for 3D printing or 1:1 drawings for paper, plywood or CNC.</p>
+    </header>
+    <div class="layout">
+      <aside>
+        <form id="form" autocomplete="off"></form>
+        <button type="button" id="reset" class="ghost">Reset to defaults</button>
+      </aside>
+      <main>
+        <nav class="tabs" id="tabs" role="tablist">
+          <button role="tab" data-view="drawings" aria-selected="true">2D templates</button>
+          <button role="tab" data-view="joint">3D joint</button>
+          <button role="tab" data-view="socket">3D socket template</button>
+          <button role="tab" data-view="tenon">3D tenon template</button>
+        </nav>
+        <div class="stage">
+          <div id="drawings" class="drawings"></div>
+          <div id="three" class="three" hidden></div>
+          <label id="explode-wrap" class="overlay" hidden><input type="checkbox" id="explode" checked /> Lift joist out</label>
+          <div id="blocked" class="blocked" hidden>Fix the errors below to see the templates.</div>
+        </div>
+        <section id="issues" class="issues" aria-live="polite"></section>
+        <section class="panel">
+          <h2>Result</h2>
+          <table id="results"></table>
+        </section>
+        <section class="panel">
+          <h2>Download</h2>
+          <div class="downloads">
+            <div>
+              <h3>3D print (STL)</h3>
+              <button data-dl="stl-socket">Socket template</button>
+              <button data-dl="stl-tenon">Tenon template</button>
+            </div>
+            <div>
+              <h3>Print 1:1 (PDF)</h3>
+              <select id="paper" aria-label="Paper size">
+                <option value="a4">A4</option>
+                <option value="a3">A3</option>
+                <option value="letter">Letter</option>
+              </select>
+              <button data-dl="pdf">Both templates</button>
+            </div>
+            <div>
+              <h3>Vector (SVG / DXF)</h3>
+              <button data-dl="svg-socket">Socket SVG</button>
+              <button data-dl="svg-tenon">Tenon SVG</button>
+              <button data-dl="dxf-socket">Socket DXF</button>
+              <button data-dl="dxf-tenon">Tenon DXF</button>
+            </div>
+          </div>
+          <p class="note">Print the PDF at 100 % (“actual size”) and check the 100 mm bar. Print the STL with the router face on the bed; no supports needed. Always make a test cut in scrap before cutting real beams.</p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/ui/main.ts"></script>
+  </body>
+</html>

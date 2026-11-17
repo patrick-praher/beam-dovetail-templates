@@ -1,0 +1,28 @@
+{
+  "name": "beam-dovetail-templates",
+  "version": "1.0.0",
+  "description": "Generate 3D-printable and paper router templates for large dovetail joints in wooden beams",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "manifold-3d": "^3.5.5",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.187.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  },
+  "private": true
+}
