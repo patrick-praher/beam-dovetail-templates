@@ -91,6 +91,14 @@ describe('solids', () => {
     }
   });
 
+  it('puts screw holes in the tongue of a 60 mm joist', () => {
+    for (const joistHeight of [120, 160]) {
+      const { m } = build({ joistWidth: 60, joistHeight });
+      const holes = m.tenon.outline.filter((poly) => poly.every((q) => Math.abs(q.x) <= DEFAULTS.screwDiameter / 2 + 0.1));
+      expect(holes.length).toBe(2);
+    }
+  });
+
   it('leaves the bracket out without frame or screws', () => {
     expect(build({ supportBracket: true, frame: false }).m.tenon.bracket).toBeUndefined();
     expect(build({ supportBracket: true, screwDiameter: 0 }).m.tenon.bracket).toBeUndefined();

@@ -52,6 +52,8 @@ export interface Model {
 
 const CORNER = 3;
 const NOTCH = 3;
+/** Thinnest wall left around a screw counterbore: two perimeters with a 0.4 mm nozzle. */
+const MIN_WALL = 0.8;
 const BRACKET_WIDTH = 40;
 /** Wood left under the joist screw's counterbore in the bracket foot. */
 const BRACKET_SCREW_GRIP = 12;
@@ -215,8 +217,9 @@ export function buildModel(k: Kernel, j: Joint): Model {
     }
     tPlate = sub(tPlate, notch(0, tBounds.y0, 0, 1));
     const tHoles: Pt[] = [];
-    const head = p.screwDiameter;
-    if (hasHoles && j.tongue.rho >= head + 3) {
+    // The holes sit on the arc centre, so the counterbore (radius = screw Ø)
+    // leaves rho − Ø of plastic to the tongue edge.
+    if (hasHoles && j.tongue.rho >= p.screwDiameter + MIN_WALL) {
       const upper = Math.max(15, j.tongue.yc * 0.3);
       if (j.tongue.yc - upper >= 25) tHoles.push({ x: 0, y: upper });
       tHoles.push({ x: 0, y: j.tongue.yc });
