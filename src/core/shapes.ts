@@ -55,7 +55,7 @@ const NOTCH = 3;
 /** Countersunk (Spax style) screws: head Ø = 2 × screw Ø, 90° under the head. */
 const HEAD_FACTOR = 2;
 /** How far the head sits below the router face. */
-const SINK_RECESS = 0.5;
+const SINK_RECESS = 1;
 /** Thinnest wall left around a screw countersink: two perimeters with a 0.4 mm nozzle. */
 const MIN_WALL = 0.8;
 const BRACKET_WIDTH = 40;
