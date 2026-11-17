@@ -1,12 +1,18 @@
-# Deploys the app to GitHub Pages. Run it manually once Pages is enabled
-# (Settings → Pages → Source: GitHub Actions).
+# Deploys the app to GitHub Pages on every push to main (needs Settings →
+# Pages → Source: GitHub Actions). Can also be started by hand.
 name: Deploy to GitHub Pages
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
+# One deploy at a time; a newer push replaces a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,6 +26,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

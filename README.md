@@ -30,7 +30,7 @@ npm run presets  # ready-made STL sets for common joist sizes in makerworld/
 ```
 
 `dist/` can be hosted anywhere. `.github/workflows/pages.yml` deploys it to
-GitHub Pages (enable Pages with source "GitHub Actions", then run the workflow).
+GitHub Pages on every push to `main`, after the tests pass.
 
 ## The joint
 
