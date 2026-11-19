@@ -48,6 +48,15 @@ export const en = {
     dxfTenon: 'Tenon DXF',
     note: 'Print the PDF at 100 % (“actual size”) and check the 100 mm bar. Print the STL with the router face on the bed; no supports needed. Always make a test cut in scrap before cutting real beams.',
   },
+  disclaimer: {
+    notice: 'Not a structural design tool: it does not check whether a joint can carry your loads. Have load-bearing joints designed by a structural engineer. Use at your own risk.',
+    link: 'Disclaimer',
+    title: 'Disclaimer',
+    p1: 'This app generates router templates. It is not a structural design tool: it does not check whether a joint can carry the loads in your structure. Its warnings only cover geometry and machining.',
+    p2: 'Load-bearing connections must be designed and checked by a qualified structural engineer according to the applicable building codes (e.g. Eurocode 5). Wood quality, moisture, fit, fasteners and workmanship all affect the strength of a joint.',
+    p3: 'All results, drawings and files are provided as is, without any warranty of correctness or fitness for a particular purpose. You use them at your own risk. To the extent permitted by law, the author accepts no liability for damage to property or injury to persons resulting from the use of this app or of parts made with it.',
+    p4: 'Test every template on scrap wood before cutting real beams, and follow the safety instructions of your router and bits.',
+  },
   levels: { error: 'Error', warn: 'Check', info: 'Tip' },
   groups: { wood: 'Wood', dovetail: 'Dovetail', router: 'Router', fit: 'Fit', template: 'Template' },
   fields: {
@@ -135,6 +144,7 @@ export const en = {
     tenonLegend: 'Solid blue: tenon at its end face. Dashed blue: tenon at the shoulder.',
     bracket: (size: string, d: S, frame: S, joist: S) =>
       `Support bracket (dotted, separate STL, ${size} mm): 2 screws ${d} × ${frame} through the frame, 1 screw ${d} × ${joist} up into the joist.`,
+    disclaimer: ['Not a structural design – have load-bearing joints checked', 'by a structural engineer. Use at your own risk.'],
     sheet: (title: string, r: S, rows: S, c: S, cols: S, overlap: S) =>
       `${title} – sheet row ${r}/${rows}, column ${c}/${cols} – sheets overlap ${overlap} mm`,
   },

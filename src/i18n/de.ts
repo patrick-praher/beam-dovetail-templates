@@ -42,6 +42,15 @@ export const de: Messages = {
     dxfTenon: 'Zapfen DXF',
     note: 'Das PDF mit 100 % („tatsächliche Größe“) drucken und den 100-mm-Balken nachmessen. Die STL mit der Auflagefläche der Oberfräse nach unten drucken; keine Stützen nötig. Vor dem Fräsen echter Balken immer einen Probeschnitt in Restholz machen.',
   },
+  disclaimer: {
+    notice: 'Kein Werkzeug zur Tragwerksplanung: Es prüft nicht, ob eine Verbindung deine Lasten tragen kann. Tragende Verbindungen von einer Fachperson für Statik bemessen lassen. Nutzung auf eigene Gefahr.',
+    link: 'Haftungsausschluss',
+    title: 'Haftungsausschluss',
+    p1: 'Diese App erzeugt Frässchablonen. Sie ist kein Werkzeug zur Tragwerksplanung: Sie prüft nicht, ob eine Verbindung die Lasten in deinem Bauwerk tragen kann. Ihre Hinweise betreffen nur Geometrie und Bearbeitung.',
+    p2: 'Tragende Verbindungen müssen von einer befugten Fachperson für Tragwerksplanung nach den geltenden Normen (z. B. Eurocode 5) bemessen und geprüft werden. Holzqualität, Holzfeuchte, Passgenauigkeit, Verbindungsmittel und Ausführung beeinflussen die Festigkeit einer Verbindung.',
+    p3: 'Alle Ergebnisse, Zeichnungen und Dateien werden ohne Gewähr für Richtigkeit oder Eignung für einen bestimmten Zweck bereitgestellt. Die Nutzung erfolgt auf eigene Gefahr. Soweit gesetzlich zulässig, übernimmt der Autor keine Haftung für Sach- oder Personenschäden, die aus der Nutzung dieser App oder der damit hergestellten Teile entstehen.',
+    p4: 'Jede Schablone vor dem Fräsen echter Balken an Restholz prüfen und die Sicherheitshinweise von Oberfräse und Fräser beachten.',
+  },
   levels: { error: 'Fehler', warn: 'Prüfen', info: 'Tipp' },
   groups: { wood: 'Holz', dovetail: 'Schwalbenschwanz', router: 'Oberfräse', fit: 'Passung', template: 'Schablone' },
   fields: {
@@ -129,6 +138,7 @@ export const de: Messages = {
     tenonLegend: 'Blau durchgezogen: Zapfen an der Stirnseite. Blau gestrichelt: Zapfen an der Schulter.',
     bracket: (size: string, d: S, frame: S, joist: S) =>
       `Stützwinkel (gepunktet, eigene STL, ${size} mm): 2 Schrauben ${d} × ${frame} durch den Rahmen, 1 Schraube ${d} × ${joist} von unten in den Nebenträger.`,
+    disclaimer: ['Keine Tragwerksplanung – tragende Verbindungen von einer', 'Fachperson für Statik prüfen lassen. Nutzung auf eigene Gefahr.'],
     sheet: (title: string, r: S, rows: S, c: S, cols: S, overlap: S) =>
       `${title} – Blatt Zeile ${r}/${rows}, Spalte ${c}/${cols} – Blätter überlappen ${overlap} mm`,
   },

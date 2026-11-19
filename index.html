@@ -23,6 +23,7 @@
         <button type="button" id="reset" class="ghost" data-i18n="ui.reset">Reset to defaults</button>
       </aside>
       <main>
+        <p class="notice"><span data-i18n="disclaimer.notice">Not a structural design tool: it does not check whether a joint can carry your loads. Have load-bearing joints designed by a structural engineer. Use at your own risk.</span> <a href="#disclaimer" data-i18n="disclaimer.link">Disclaimer</a></p>
         <nav class="tabs" id="tabs" role="tablist">
           <button role="tab" data-view="drawings" aria-selected="true" data-i18n="ui.tabDrawings">2D templates</button>
           <button role="tab" data-view="joint" data-i18n="ui.tabJoint">3D joint</button>
@@ -70,6 +71,13 @@
         </section>
       </main>
     </div>
+    <footer id="disclaimer">
+      <h2 data-i18n="disclaimer.title">Disclaimer</h2>
+      <p data-i18n="disclaimer.p1">This app generates router templates. It is not a structural design tool: it does not check whether a joint can carry the loads in your structure. Its warnings only cover geometry and machining.</p>
+      <p data-i18n="disclaimer.p2">Load-bearing connections must be designed and checked by a qualified structural engineer according to the applicable building codes (e.g. Eurocode 5). Wood quality, moisture, fit, fasteners and workmanship all affect the strength of a joint.</p>
+      <p data-i18n="disclaimer.p3">All results, drawings and files are provided as is, without any warranty of correctness or fitness for a particular purpose. You use them at your own risk. To the extent permitted by law, the author accepts no liability for damage to property or injury to persons resulting from the use of this app or of parts made with it.</p>
+      <p data-i18n="disclaimer.p4">Test every template on scrap wood before cutting real beams, and follow the safety instructions of your router and bits.</p>
+    </footer>
     <script type="module" src="/src/ui/main.ts"></script>
   </body>
 </html>

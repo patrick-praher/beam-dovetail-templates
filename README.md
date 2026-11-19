@@ -138,6 +138,20 @@ scripts/              preset generator for ready-made STL sets
 docs/PLAN.md          implementation plan and status
 ```
 
+## Disclaimer
+
+This app generates router templates. It is **not a structural design tool**: it
+does not check whether a joint can carry the loads in your structure; its
+warnings only cover geometry and machining. Load-bearing connections must be
+designed and checked by a qualified structural engineer according to the
+applicable building codes (e.g. Eurocode 5).
+
+All results, drawings and files are provided as is, without any warranty of
+correctness or fitness for a particular purpose, and you use them at your own
+risk. To the extent permitted by law, the author accepts no liability for damage
+to property or injury to persons resulting from the use of this app or of parts
+made with it. Test every template on scrap wood before cutting real beams.
+
 ## License
 
 [PolyForm Noncommercial 1.0.0](LICENSE): free for personal, hobby, educational

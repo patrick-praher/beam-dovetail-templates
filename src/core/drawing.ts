@@ -106,6 +106,7 @@ export function buildDrawings(j: Joint, m: Model): Drawing[] {
     router,
     txt.socketDepth(f(T + j.socketDepth), f(j.socketDepth)),
     txt.socketLegend,
+    ...txt.disclaimer,
   ]);
 
   // Tenon template on the end grain of the joist.
@@ -129,6 +130,7 @@ export function buildDrawings(j: Joint, m: Model): Drawing[] {
     router,
     txt.tenonDepth(f(T + j.tenonDepth), f(j.tenonDepth)),
     txt.tenonLegend,
+    ...txt.disclaimer,
     ...(br
       ? [txt.bracket(br.size.map((v) => f(v)).join(' × '), f(p.screwDiameter), br.frameScrew, br.joistScrew)]
       : []),

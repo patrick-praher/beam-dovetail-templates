@@ -99,3 +99,9 @@ td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-spa
 .downloads { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 .downloads button, .downloads select { margin: 0 4px 6px 0; }
 .note { color: var(--muted); margin: 10px 0 0; font-size: 13px; }
+
+.notice { margin: 0 0 8px; padding: 8px 12px; border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 8px; background: var(--panel); font-size: 13px; }
+.notice a, footer a { color: var(--accent); }
+footer { padding: 0 20px 32px; color: var(--muted); font-size: 13px; max-width: 90ch; }
+footer h2 { color: var(--text); }
+footer p { margin: 0 0 8px; }
