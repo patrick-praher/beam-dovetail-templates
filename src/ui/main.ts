@@ -314,6 +314,10 @@ async function download(kind: string) {
     save(`dovetail-templates-${tag}.pdf`, drawingsToPdf(drawings, paper), 'application/pdf');
     return;
   }
+  if (what === 'gauge') {
+    save(`dovetail-${which}-depth-gauge-${tag}.stl`, meshToStl(model.gauges[which as 'socket' | 'tenon']), 'model/stl');
+    return;
+  }
   if (which === 'bracket') {
     const bracket = model.tenon.bracket;
     if (bracket) save(`dovetail-support-bracket-${tag}.stl`, meshToStl(bracket.printMesh), 'model/stl');

@@ -48,6 +48,8 @@ export interface Model {
   beam: MeshData;
   /** Joist with tenon; tenon end face at z = 0, wood at z < 0. */
   joist: MeshData;
+  /** Depth setting blocks, as printed (z = 0 on the bed, top at the bit depth). */
+  gauges: Record<'socket' | 'tenon', MeshData>;
 }
 
 const CORNER = 3;
@@ -59,6 +61,8 @@ const SINK_RECESS = 1;
 /** Thinnest wall left around a screw countersink: two perimeters with a 0.4 mm nozzle. */
 const MIN_WALL = 0.8;
 const BRACKET_WIDTH = 40;
+const GAUGE_LENGTH = 120;
+const GAUGE_WALL = 12;
 /** Wood left under the joist screw's counterbore in the bracket foot. */
 const BRACKET_SCREW_GRIP = 12;
 
@@ -304,7 +308,21 @@ export function buildModel(k: Kernel, j: Joint): Model {
     );
     const joist = keep(box(-p.joistWidth / 2, p.joistWidth / 2, -p.joistHeight, 0, -joistLen, -t).add(tail));
 
-    return { socket, tenon, beam: meshOf(beam), joist: meshOf(joist) };
+    // ---------- Depth gauges ----------
+    // The router stands on the block with the guide in the hole and is
+    // plunged until the bit tip touches the bench. Grooves on one end tell
+    // the blocks apart: one for the socket, two for the tenon.
+    const gauge = (depth: number, marks: number): MeshData => {
+      const hole = guideMax + 2;
+      const hw = hole / 2 + GAUGE_WALL;
+      const hl = Math.max(GAUGE_LENGTH, hole + 60) / 2;
+      let solid = keep(box(-hl, hl, -hw, hw, 0, depth).subtract(rodZ(0, 0, -1, depth + 1, hole)));
+      for (let i = 0; i < marks; i++) solid = keep(solid.subtract(rodZ(hl, (i - (marks - 1) / 2) * 8, -1, depth + 1, 4)));
+      return meshOf(solid);
+    };
+    const gauges = { socket: gauge(T + j.socketDepth, 1), tenon: gauge(T + j.tenonDepth, 2) };
+
+    return { socket, tenon, beam: meshOf(beam), joist: meshOf(joist), gauges };
   } finally {
     for (const o of trash) o.delete();
   }

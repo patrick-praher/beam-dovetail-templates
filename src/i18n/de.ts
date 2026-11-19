@@ -32,6 +32,8 @@ export const de: Messages = {
     stlSocket: 'Schablone Zapfenloch',
     stlTenon: 'Schablone Zapfen',
     stlBracket: 'Stützwinkel',
+    gaugeSocket: 'Tiefenlehre Zapfenloch',
+    gaugeTenon: 'Tiefenlehre Zapfen',
     pdfHeading: '1:1 drucken (PDF)',
     paper: 'Papierformat',
     pdfBoth: 'Beide Schablonen',
@@ -40,7 +42,7 @@ export const de: Messages = {
     svgTenon: 'Zapfen SVG',
     dxfSocket: 'Zapfenloch DXF',
     dxfTenon: 'Zapfen DXF',
-    note: 'Das PDF mit 100 % („tatsächliche Größe“) drucken und den 100-mm-Balken nachmessen. Die STL mit der Auflagefläche der Oberfräse nach unten drucken; keine Stützen nötig. Vor dem Fräsen echter Balken immer einen Probeschnitt in Restholz machen.',
+    note: 'Das PDF mit 100 % („tatsächliche Größe“) drucken und den 100-mm-Balken nachmessen. Die STL mit der Auflagefläche der Oberfräse nach unten drucken; keine Stützen nötig. Zum Einstellen der Frästiefe die Oberfräse mit dem Kopierring im Loch auf die Tiefenlehre stellen und eintauchen, bis der Fräser die Werkbank berührt (eine Rille = Zapfenloch, zwei = Zapfen). Vor dem Fräsen echter Balken immer einen Probeschnitt in Restholz machen.',
   },
   disclaimer: {
     notice: 'Kein Werkzeug zur Tragwerksplanung: Es prüft nicht, ob eine Verbindung deine Lasten tragen kann. Tragende Verbindungen von einer Fachperson für Statik bemessen lassen. Nutzung auf eigene Gefahr.',

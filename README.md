@@ -100,7 +100,11 @@ template up or down by 1 mm changes the flank fit by `sin(taper)` mm.
    the bit tip and outside the guide's path, so it never gets cut. Print it
    lying on its side as exported.
 4. Set the bit depth **below the router base** to the value shown in the
-   result table (plate thickness + cut depth).
+   result table (plate thickness + cut depth). The **depth gauges** make this
+   quick: stand the router on the printed block with the template guide in its
+   hole and plunge until the bit tip touches the bench. One groove on the end
+   marks the socket gauge, two the tenon gauge. Check the printed height with
+   a caliper once.
 5. A dovetail bit cannot plunge: start with the bit outside the wood (above
    the beam for the socket, beside the joist for the tenon), move in, and leave
    the same way. Never lift the router in the cut.

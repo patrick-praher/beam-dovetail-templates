@@ -38,6 +38,8 @@ export const en = {
     stlSocket: 'Socket template',
     stlTenon: 'Tenon template',
     stlBracket: 'Support bracket',
+    gaugeSocket: 'Socket depth gauge',
+    gaugeTenon: 'Tenon depth gauge',
     pdfHeading: 'Print 1:1 (PDF)',
     paper: 'Paper size',
     pdfBoth: 'Both templates',
@@ -46,7 +48,7 @@ export const en = {
     svgTenon: 'Tenon SVG',
     dxfSocket: 'Socket DXF',
     dxfTenon: 'Tenon DXF',
-    note: 'Print the PDF at 100 % (“actual size”) and check the 100 mm bar. Print the STL with the router face on the bed; no supports needed. Always make a test cut in scrap before cutting real beams.',
+    note: 'Print the PDF at 100 % (“actual size”) and check the 100 mm bar. Print the STL with the router face on the bed; no supports needed. To set the plunge depth, stand the router on a depth gauge with the guide in the hole and plunge until the bit touches the bench (one groove = socket, two = tenon). Always make a test cut in scrap before cutting real beams.',
   },
   disclaimer: {
     notice: 'Not a structural design tool: it does not check whether a joint can carry your loads. Have load-bearing joints designed by a structural engineer. Use at your own risk.',

@@ -99,6 +99,17 @@ describe('solids', () => {
     }
   });
 
+  it('depth gauges are as tall as the bit depth below the router base', () => {
+    const { j, m } = build();
+    const T = DEFAULTS.templateThickness;
+    for (const [g, depth] of [[m.gauges.socket, j.socketDepth], [m.gauges.tenon, j.tenonDepth]] as const) {
+      expect(volume(g)).toBeGreaterThan(0);
+      const [lo, hi] = zRange(g);
+      expect(lo).toBeCloseTo(0, 5);
+      expect(hi).toBeCloseTo(T + depth, 5);
+    }
+  });
+
   it('leaves the bracket out without frame or screws', () => {
     expect(build({ supportBracket: true, frame: false }).m.tenon.bracket).toBeUndefined();
     expect(build({ supportBracket: true, screwDiameter: 0 }).m.tenon.bracket).toBeUndefined();
